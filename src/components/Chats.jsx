@@ -1,38 +1,40 @@
-import React from "react";
+import { doc, onSnapshot } from "firebase/firestore";
+import React, { useContext } from "react";
+import { useEffect } from "react";
+import { useState } from "react";
+import { AuthContext } from "../context/AuthContext";
+import { db } from "../firebase";
 
 const Chats = () => {
+  const [chats, setChats] = useState([]);
+
+  const { currentUser } = useContext(AuthContext);
+
+  useEffect(() => {
+    const getChats = () => {
+      const unsub = onSnapshot(doc(db, "userChats", currentUser.uid), (doc) => {
+        setChats(doc.data());
+      });
+
+      return () => {
+        unsub();
+      };
+    };
+    currentUser.uid && getChats();
+  }, [currentUser.uid]);
+  //
+  console.log(Object.entries(chats));
   return (
     <div className="chats">
-      <div className="userChat">
-        <img
-          src="https://scontent.fsgn5-13.fna.fbcdn.net/v/t1.6435-9/123361421_368687354450820_1095524508741991004_n.jpg?stp=c0.119.1080.1080a_dst-jpg_s851x315&_nc_cat=106&ccb=1-7&_nc_sid=da31f3&_nc_ohc=Y4nXhPFYFsAAX9l1Psv&tn=GsX8Cfv5rXzNrNxI&_nc_ht=scontent.fsgn5-13.fna&oh=00_AT9tgCKBqYF9NKhmBqLTevDsR_Pr-nbUse3L5rEibNoYqQ&oe=634D4FA6"
-          alt=""
-        />
-        <div className="userChatInfo">
-          <span>Quay</span>
-          <p>hello</p>
+      {Object.entries(chats)?.map((chat) => (
+        <div className="userChat" key={chat[0]}>
+          <img src={chat[1].userInfo.photoURL} alt="" />
+          <div className="userChatInfo">
+            <span>{chat[1].userInfo.displayName}</span>
+            <p>{chat[1].userInfo.lastMessage?.text}</p>
+          </div>
         </div>
-      </div>
-      <div className="userChat">
-        <img
-          src="https://scontent.fsgn5-13.fna.fbcdn.net/v/t1.6435-9/123361421_368687354450820_1095524508741991004_n.jpg?stp=c0.119.1080.1080a_dst-jpg_s851x315&_nc_cat=106&ccb=1-7&_nc_sid=da31f3&_nc_ohc=Y4nXhPFYFsAAX9l1Psv&tn=GsX8Cfv5rXzNrNxI&_nc_ht=scontent.fsgn5-13.fna&oh=00_AT9tgCKBqYF9NKhmBqLTevDsR_Pr-nbUse3L5rEibNoYqQ&oe=634D4FA6"
-          alt=""
-        />
-        <div className="userChatInfo">
-          <span>Quay</span>
-          <p>hello</p>
-        </div>
-      </div>
-      <div className="userChat">
-        <img
-          src="https://scontent.fsgn5-13.fna.fbcdn.net/v/t1.6435-9/123361421_368687354450820_1095524508741991004_n.jpg?stp=c0.119.1080.1080a_dst-jpg_s851x315&_nc_cat=106&ccb=1-7&_nc_sid=da31f3&_nc_ohc=Y4nXhPFYFsAAX9l1Psv&tn=GsX8Cfv5rXzNrNxI&_nc_ht=scontent.fsgn5-13.fna&oh=00_AT9tgCKBqYF9NKhmBqLTevDsR_Pr-nbUse3L5rEibNoYqQ&oe=634D4FA6"
-          alt=""
-        />
-        <div className="userChatInfo">
-          <span>Quay</span>
-          <p>hello</p>
-        </div>
-      </div>
+      ))}
     </div>
   );
 };
